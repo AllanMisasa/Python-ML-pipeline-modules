@@ -21,8 +21,8 @@ def snapshots(num_images): # Takes a snapshot of the video and saves it as a jpg
     start_num = suffix()
     for image in range(num_images): 
         ret, frame = cap.read()
-        suffix = start_num + image + 1
-        name = "frame%d.jpg" % suffix
+        suf = start_num + image + 1
+        name = "frame%d.jpg" % suf
         cv.imwrite(name, frame)
         print("Saved %s" % name)
 
@@ -42,7 +42,9 @@ def repeated_snapshot(interval, num_images): # Takes a snapshot of the video eve
             break
         time.sleep(interval)
         
-# snapshot(1)
+#snapshots(1)
+
+
 repeated_snapshot(1, 10)
 
 '''
