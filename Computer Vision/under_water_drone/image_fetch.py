@@ -1,7 +1,3 @@
-from PIL import Image
-import numpy as np
-import urllib
-import matplotlib.pyplot as plt
 import requests
 from bs4 import BeautifulSoup
 
@@ -35,4 +31,6 @@ image_paths = [url_strip(url) for url in get_url_paths(url, ext)] # Gets the pat
 #image_paths = get_url_paths(url2, ext)
 print((image_paths[0])) # Prints the first image path
 
-plt.imshow(np.array(Image.open(urllib.request.urlopen(image_paths[0])))) # Opens the first image
+# example_image = Image.open(urllib.request.urlopen(image_paths[3])) # Opens the first image
+# gray = ImageOps.grayscale(example_image) # Converts the image to grayscale
+# gray.show() # Shows the image
