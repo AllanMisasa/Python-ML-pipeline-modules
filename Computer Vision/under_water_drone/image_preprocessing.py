@@ -3,6 +3,7 @@ import cv2 as cv
 import numpy as np 
 from image_fetch import get_url_paths, url_strip 
 
+
 url = "https://github.com/AllanMisasa/Python-ML-pipeline-modules/blob/main/Computer%20Vision/DD_dataset"
 ext = '.jpg'
 image_paths = [url_strip(url) for url in get_url_paths(url, ext)] # Gets the paths of the images from the url
