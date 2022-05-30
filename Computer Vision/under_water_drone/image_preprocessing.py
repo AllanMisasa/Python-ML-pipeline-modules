@@ -1,31 +1,17 @@
 import urllib.request as request
 import cv2 as cv
-from cv2 import sort
 import numpy as np 
-from image_fetch import get_url_paths, url_strip 
+import pandas as pd
 
-
-# url = "https://github.com/AllanMisasa/Python-ML-pipeline-modules/blob/main/Computer%20Vision/DD_dataset"
-url = "https://github.com/AllanMisasa/Python-ML-pipeline-modules/blob/main/Computer%20Vision/DD_dataset/transformed"
-
-ext = '.jpg'
-image_paths = [url_strip(url) for url in get_url_paths(url, ext)] # Gets the paths of the images from the url
-print(image_paths[3])
-
-def get_image(number): # Gets the image from the url
+def get_image(number, image_paths): # Gets the image from the url
     req = request.urlopen(image_paths[number]) # Opens the url
-    arr = np.asarray(bytearray(req.read()), dtype=np.uint8) # Converts the url to an array
+    arr = np.asarray(bytearray(req.read()), dtype=np.uint8) # Converts the url pip to an array
     img = cv.imdecode(arr, -1) # Decodes the array
     return img # Returns the image
-
-image = get_image(3) # Gets the image
 
 def preprocess_image(image): # Preprocesses the image
     gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY) # Converts the image to grayscale
     img_blur = cv.GaussianBlur(gray, (3, 3), 0) # Blurs the image
-    #dimensions = np.shape(gray) # The shape of the image
-    # cropped_image = gray[80:dimensions[1], 150:330] # Crops the image
-    # img_thresh = cv.adaptiveThreshold(img_blur, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 2) # Thresholds the image
     sobelx = cv.Sobel(img_blur, cv.CV_64F, 1, 0, ksize=5) # Applies the sobel filter to the x axis of the image
     sobely = cv.Sobel(img_blur, cv.CV_64F, 0, 1, ksize=5)  # Applies the sobel filter to the y axis of the image
     sobelxy = cv.Sobel(img_blur, cv.CV_64F, 1, 1, ksize=5) # Applies the sobel filter to the x and y axis of the image
@@ -33,8 +19,20 @@ def preprocess_image(image): # Preprocesses the image
     ret, thresh = cv.threshold(gray, 127, 255, cv.THRESH_BINARY) # Thresholds the image
     return gray
 
+def load_unique_images(): # Loads the unique images
+    df = pd.read_excel('Computer Vision/under_water_drone/sea_samples_file_names_targets.xlsx').drop_duplicates(subset=['unique_id']) # Reads the excel file
+    url = "https://raw.githubusercontent.com/AllanMisasa/Python-ML-pipeline-modules/main/Computer%20Vision/DD_dataset/transformed/"
+    df['file_name'] = url + df['file_name'] # Adds the url to the image paths
+    return(df) # Returns the unique images
+
+df = load_unique_images() # Loads the unique images
+
+print(df.head())
+
+'''
 processed_image = preprocess_image(image)
     
 cv.imshow('image', processed_image) # Shows the image
 cv.waitKey(0) # Waits for a key press
 cv.destroyAllWindows() # Destroys all the windows
+'''
