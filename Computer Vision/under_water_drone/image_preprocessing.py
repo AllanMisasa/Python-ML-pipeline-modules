@@ -2,9 +2,14 @@ import urllib.request as request
 import cv2 as cv
 import numpy as np 
 import pandas as pd
+# from sklearnex import patch_sklearn
+# patch_sklearn()
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
 
-def get_image(number, image_paths): # Gets the image from the url
-    req = request.urlopen(image_paths[number]) # Opens the url
+def get_image(image_path): # Gets the image from the url
+    req = request.urlopen(image_path) # Opens the url
     arr = np.asarray(bytearray(req.read()), dtype=np.uint8) # Converts the url pip to an array
     img = cv.imdecode(arr, -1) # Decodes the array
     return img # Returns the image
@@ -25,11 +30,36 @@ def load_unique_images(): # Loads the unique images
     df['file_name'] = url + df['file_name'] # Adds the url to the image paths
     return(df) # Returns the unique images
 
-df = load_unique_images() # Loads the unique images
+def generate_dataset(dataframe):
+    image_data = [get_image(image) for image in dataframe['file_name']] # Gets the images from the url
+    image_data = [preprocess_image(image) for image in image_data] # Preprocesses the images
+    image_data = np.array(image_data) # Converts the images to a numpy array
+    image_data = image_data.reshape(image_data.shape[0], -1) # Reshapes the images to a 2D array
+    targets = dataframe['target'] # Gets the targets
+    print("Class balance is [unacceptable samples | acceptable samples]: ", np.bincount(targets)) # Prints the class balance
+    X_train, X_test, y_train, y_test = train_test_split(image_data, targets, test_size=0.2, random_state=42) # Splits the data into training and testing sets
+    scaler = StandardScaler() # Creates a scaler
+    X_train = scaler.fit_transform(X_train) # Fits and transforms the training data
+    X_test = scaler.transform(X_test) # Transforms the testing data
+    return X_train, X_test, y_train, y_test
 
-print(df.head())
+def logistic_classification(X_train, X_test, y_train, y_test): # Logistic classification
+    logreg = LogisticRegression() # Creates a logistic regression model
+    logreg.fit(X_train, y_train) # Fits the model to the training data
+    y_pred = logreg.predict(X_test) # Predicts the testing data
+    print("Logistic classification accuracy: ", logreg.score(X_test, y_test)) # Prints the accuracy of the model
+
+df = load_unique_images() # Loads the unique images
+X_train, X_test, y_train, y_test = generate_dataset(df) # Generates the dataset
+logistic_classification(X_train, X_test, y_train, y_test) # Logistic classification
+
 
 '''
+cv.imshow('image', image_data[0]) # Shows the first image
+cv.waitKey(0) # Waits for the user to press a key
+cv.destroyAllWindows() # Closes all the windows
+
+
 processed_image = preprocess_image(image)
     
 cv.imshow('image', processed_image) # Shows the image
