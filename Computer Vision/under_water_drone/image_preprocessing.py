@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split, StratifiedKFold # For data
 from sklearn.linear_model import LogisticRegression # For regressors
 from sklearn.preprocessing import StandardScaler # To scale dataset
 from sklearn.metrics import confusion_matrix, RocCurveDisplay, auc # Different metrics for analyzing ML performance
+from sklearn.ensemble import RandomForestClassifier # Random forest classifier
 
 def get_image(image_path): # Gets the image from the url
     req = request.urlopen(image_path) # Opens the url
@@ -19,13 +20,14 @@ def get_image(image_path): # Gets the image from the url
 
 def preprocess_image(image): # Preprocesses the image
     gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY) # Converts the image to grayscale
-    img_blur = cv.GaussianBlur(gray, (3, 3), 0) # Blurs the image
-    sobelx = cv.Sobel(img_blur, cv.CV_64F, 1, 0, ksize=5) # Applies the sobel filter to the x axis of the image
+    contrasted = cv.equalizeHist(gray)
+    img_blur = cv.GaussianBlur(contrasted, (3, 3), 0) # Blurs the image
+    sobelx = cv.Sobel(img_blur, cv.CV_64F, 1, 0, ksize=5) # Applies the sobel filter to the x axis of the imagepip
     sobely = cv.Sobel(img_blur, cv.CV_64F, 0, 1, ksize=5)  # Applies the sobel filter to the y axis of the image
     sobelxy = cv.Sobel(img_blur, cv.CV_64F, 1, 1, ksize=5) # Applies the sobel filter to the x and y axis of the image
     edges = cv.Canny(img_blur, 100, 200) # Applies the canny filter to the image
     ret, thresh = cv.threshold(gray, 127, 255, cv.THRESH_BINARY) # Thresholds the image
-    return gray
+    return img_blur
 
 def load_unique_images(): # Loads the unique images
     df = pd.read_excel('Computer Vision/under_water_drone/sea_samples_file_names_targets.xlsx').drop_duplicates(subset=['unique_id']) # Reads the excel file
@@ -46,6 +48,7 @@ def generate_dataset(dataframe):
     image_data = np.array(image_data) # Converts the images to a numpy array
     image_data = image_data.reshape(image_data.shape[0], -1) # Reshapes the image dataframe to a 2D array
     targets = dataframe['target'] # Gets the targets
+    print(image_data[1].shape)
     print("Example 1D image: ", image_data[0])
     print("Class balance is [unacceptable samples | acceptable samples]: ", np.bincount(targets)) # Prints the class balance
     X_train, X_test, y_train, y_test = train_test_split(image_data, targets, test_size=0.2, random_state=42) # Splits the data into training and testing sets
@@ -114,6 +117,7 @@ def classification(classifier, X_train, X_test, y_train, y_test, cross_val = Tru
 df = load_unique_images() # Loads the unique images
 X_train, X_test, y_train, y_test = generate_dataset(df) # Generates the dataset
 logreg = LogisticRegression()
+ranfor = RandomForestClassifier(random_state=0)
 classification(logreg, X_train, X_test, y_train, y_test) # Logistic classification
 
 
